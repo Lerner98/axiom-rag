@@ -46,7 +46,8 @@ $BackendPort = 8001
 $FrontendPort = 8080
 $CpuModel    = 'llama3.2:3b'
 $GpuModel    = 'llama3.1:8b'
-$OllamaUrl   = 'http://localhost:11434'
+# 127.0.0.1, not localhost: Windows PowerShell tries IPv6 ::1 first and times out
+$OllamaUrl   = 'http://127.0.0.1:11434'
 
 # ---------------------------------------------------------------- helpers ---
 $script:StepNo = 0
@@ -331,7 +332,7 @@ Ok "Backend running on http://localhost:$BackendPort"
 
 Info 'Waiting for the web interface...'
 $deadline = (Get-Date).AddSeconds(120)
-while (-not (Test-Url "http://localhost:$FrontendPort" 3) -and (Get-Date) -lt $deadline) {
+while (-not (Test-Url "http://127.0.0.1:$FrontendPort" 3) -and (Get-Date) -lt $deadline) {
     if ($frontend.HasExited) { Fail 'The web interface stopped unexpectedly.' "Details: $LogDir\frontend.err.log" }
     Start-Sleep -Seconds 2
 }
