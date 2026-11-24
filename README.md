@@ -39,7 +39,7 @@ Everything runs on your computer. Your documents never leave it.
 
 **No graphics card? No problem.** Setup checks for an NVIDIA GPU with 6 GB+ of memory. If it
 finds one, it uses `llama3.1:8b` on the GPU. Otherwise it runs the smaller `llama3.2:3b` on the
-processor (CPU mode).
+processor (CPU mode), or `llama3.2:1b` on PCs with less than 8 GB of memory.
 
 | Measured on an Intel Core Ultra 9 285K, CPU only (`COMPUTE_DEVICE=cpu`, GPU unused) | Time |
 |---|---|

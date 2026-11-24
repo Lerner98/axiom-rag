@@ -44,7 +44,8 @@ $FrontendDir = Join-Path $Root 'original_rag\frontend'
 $LogDir      = Join-Path $Root 'logs'
 $BackendPort = 8001
 $FrontendPort = 8080
-$CpuModel    = 'llama3.2:3b'
+$CpuModel    = 'llama3.2:3b'   # CPU, 8 GB RAM or more
+$SmallCpuModel = 'llama3.2:1b' # CPU, under 8 GB RAM
 $GpuModel    = 'llama3.1:8b'
 # 127.0.0.1, not localhost: Windows PowerShell tries IPv6 ::1 first and times out
 $OllamaUrl   = 'http://127.0.0.1:11434'
@@ -142,6 +143,12 @@ if (-not (Test-Path $BackendDir) -or -not (Test-Path $FrontendDir)) {
 }
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
 
+# Files from a downloaded ZIP carry Windows' "from the internet" mark (Zone.Identifier),
+# which makes Windows warn or block when the scripts are run directly. Clear it on the
+# launcher scripts so later double-clicks don't prompt again. (Python/JS sources are unaffected.)
+Get-ChildItem -Path (Join-Path $Root '*') -File -Include *.ps1, *.bat, *.cmd -ErrorAction SilentlyContinue |
+    Unblock-File -ErrorAction SilentlyContinue
+
 # Quieter model downloads from Hugging Face on Windows (inherited by the backend).
 $env:HF_HUB_DISABLE_SYMLINKS_WARNING = '1'
 $env:TOKENIZERS_PARALLELISM = 'false'
@@ -215,7 +222,22 @@ if ($Mode -eq 'auto') {
         Info 'No NVIDIA GPU found - that is fine, the AI will run on the processor.'
     }
 }
-if (-not $Model) { $Model = if ($device -eq 'gpu') { $GpuModel } else { $CpuModel } }
+if (-not $Model) {
+    if ($device -eq 'gpu') {
+        $Model = $GpuModel
+    } else {
+        # CPU: 3B model on 8 GB+ machines, 1B below that. An "8 GB" PC reports ~7.7-7.9 GB.
+        $ramGb = 0
+        try { $ramGb = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 1) } catch { }
+        if ($ramGb -gt 0 -and $ramGb -lt 7.5) {
+            $Model = $SmallCpuModel
+            Info "This PC has $ramGb GB of memory - using the smaller model to keep it responsive."
+        } else {
+            $Model = $CpuModel
+            if ($ramGb -gt 0) { Info "This PC has $ramGb GB of memory." }
+        }
+    }
+}
 Ok "Mode: $($device.ToUpper())   Model: $Model"
 
 Step "Downloading the AI model ($Model) - only needed once"
