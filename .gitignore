@@ -44,3 +44,7 @@ original_rag/backend/chroma_data/
 *.tmp
 *.temp
 nul
+
+# Logs written by setup.ps1
+logs/
+.venv/

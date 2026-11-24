@@ -90,7 +90,24 @@ async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
     settings.ensure_directories()
 
+    # Warm up the heavy local models in the background so the first question
+    # doesn't pay for importing torch and loading the cross-encoder (~10-25s on CPU).
+    def _warm_models():
+        try:
+            from api.routes.chat import get_pipeline
+            reranker = get_pipeline().nodes._get_reranker()
+            if reranker is not None and hasattr(reranker, "_ensure_initialized"):
+                reranker._ensure_initialized()
+            logger.info("Model warm-up complete")
+        except Exception as e:  # warm-up is best effort; requests still lazy-load
+            logger.warning(f"Model warm-up skipped: {e}")
+
+    import asyncio
+    warm_task = asyncio.create_task(asyncio.to_thread(_warm_models))
+
     yield
+
+    warm_task.cancel()
 
     # Shutdown - close connections
     logger.info("Shutting down...")
@@ -166,7 +183,7 @@ async def health_check():
         from vectorstore.store import VectorStore
         vs = VectorStore()
         # Simple check - can we access the store?
-        services["vector_store"] = vs._store is not None or True  # Lazy init is ok
+        services["vector_store"] = vs is not None  # Store initializes lazily
     except Exception as e:
         logger.warning(f"Vector store health check failed: {e}")
         services["vector_store"] = False

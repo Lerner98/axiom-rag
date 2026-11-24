@@ -1,0 +1,52 @@
+# Runtime dependencies only - what the app needs to run.
+# The one-command installer (setup.ps1) uses this file.
+# requirements.txt = this file + evaluation and dev tools.
+
+# Core
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+python-multipart>=0.0.6
+
+# LangChain
+langchain>=0.1.0
+langchain-core>=0.1.0
+langchain-community>=0.0.10
+langchain-text-splitters>=0.0.1
+langgraph>=0.0.20
+
+# LLM Providers (Ollama is the default; OpenAI and Gemini are optional)
+langchain-ollama>=0.1.0
+langchain-openai>=0.0.5
+langchain-google-genai>=0.0.6
+
+# Vector Stores
+langchain-chroma>=0.0.1
+chromadb>=0.4.22
+
+# Embeddings - FastEmbed (ONNX-based, CPU)
+fastembed>=0.3.0
+
+# Hybrid Search - BM25
+rank-bm25>=0.2.2
+
+# Reranker - Cross-Encoder (runs on CPU)
+sentence-transformers>=2.2.0
+
+# Document Processing (.pdf, .txt, .md, .docx)
+pypdf>=3.17.0
+python-docx>=1.1.0
+docx2txt>=0.8
+beautifulsoup4>=4.12.0
+
+# Streaming
+sse-starlette>=1.8.0
+
+# Database
+aiosqlite>=0.19.0
+
+# Utilities
+python-dotenv>=1.0.0
+httpx>=0.26.0
+aiofiles>=23.2.0

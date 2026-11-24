@@ -81,7 +81,7 @@ class RAGPipeline:
                 temperature=0
             )
         elif settings.llm_provider == "ollama":
-            from langchain_community.chat_models import ChatOllama
+            from langchain_ollama import ChatOllama
             # Performance-tuned Ollama configuration
             return ChatOllama(
                 model=settings.ollama_model,
@@ -89,6 +89,8 @@ class RAGPipeline:
                 temperature=0,
                 # KV cache settings for faster prefill
                 num_ctx=settings.ollama_num_ctx,
+                # COMPUTE_DEVICE=cpu -> num_gpu=0 (CPU-only machines)
+                **settings.ollama_device_options(),
                 # Additional model parameters passed to Ollama
                 # Note: kv_cache_type and flash_attention are set via OLLAMA_* env vars
                 # at the Ollama server level, not per-request
