@@ -51,7 +51,7 @@ $OllamaUrl   = 'http://127.0.0.1:11434'
 
 # ---------------------------------------------------------------- helpers ---
 $script:StepNo = 0
-$TotalSteps = 8
+$TotalSteps = 9
 function Step($text) {
     $script:StepNo++
     Write-Host ''
@@ -104,9 +104,10 @@ function Set-EnvValue($file, $key, $value) {
     $lines = @()
     if (Test-Path $file) { $lines = @(Get-Content $file) }
     $found = $false
-    $lines = $lines | ForEach-Object {
+    # @() keeps this an array even with one line; otherwise += would join strings
+    $lines = @($lines | ForEach-Object {
         if ($_ -match "^\s*$([regex]::Escape($key))\s*=") { $found = $true; "$key=$value" } else { $_ }
-    }
+    })
     if (-not $found) { $lines += "$key=$value" }
     Set-Content -Path $file -Value $lines -Encoding ascii
 }
