@@ -18,7 +18,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/lib/
+# (anchored: an unanchored "lib/" also ignored frontend/src/lib and broke fresh clones)
 lib64/
 parts/
 sdist/
