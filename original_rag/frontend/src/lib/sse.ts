@@ -9,7 +9,19 @@
  */
 
 import { API_CONFIG, API_ENDPOINTS, ERROR_CODES } from '@/constants/api';
-import type { Source, SSEStreamingPhase, StreamEvent } from '@/types';
+import type { Source as WireSource, SSEStreamingPhase, StreamEvent } from '@/types';
+import type { Source } from '@/stores/chatStore';
+
+/** Backend source (snake_case, score 0-1) -> UI source (id, relevance %, preview). */
+function toStoreSource(s: WireSource, index: number): Source {
+  const score = s.relevance_score ?? 0;
+  return {
+    ...s,
+    id: s.chunk_id || `${s.filename}-${s.page ?? ''}-${index}`,
+    relevance: score <= 1 ? Math.round(score * 100) : Math.round(score),
+    preview: s.content_preview ?? '',
+  };
+}
 
 export interface StreamCallbacks {
   onPhase?: (phase: SSEStreamingPhase) => void;
@@ -69,7 +81,7 @@ export async function streamChat(
         if (evt.phase) callbacks.onPhase?.(evt.phase);
         break;
       case 'sources':
-        callbacks.onSources?.((evt.sources ?? []) as Source[]);
+        callbacks.onSources?.((evt.sources ?? []).map(toStoreSource));
         break;
       case 'token':
         if (evt.content) callbacks.onToken?.(evt.content);

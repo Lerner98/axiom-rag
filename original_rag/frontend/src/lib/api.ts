@@ -50,7 +50,7 @@ function codeForStatus(status: number): string {
   return ERROR_CODES.SERVER_ERROR;
 }
 
-async function request<T>(path: string, init: RequestInit = {}, timeoutMs = API_CONFIG.timeout): Promise<T> {
+async function request<T>(path: string, init: RequestInit = {}, timeoutMs: number = API_CONFIG.timeout): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   let res: Response;
