@@ -2,6 +2,11 @@
 
 A local-first document Q&A system with source citations and hallucination detection.
 
+![Upload a document, ask a question, get an answer with its sources](docs/media/axiom-walkthrough.gif)
+
+*Real recording on CPU only (no graphics card): upload a policy document, ask a two-part question,
+get the answer with the source it came from.*
+
 ## Overview
 
 Axiom RAG enables question-answering over private documents without sending data to external services. All processing happens locally using Ollama for LLM inference and ChromaDB for vector storage.
@@ -41,6 +46,7 @@ processor (CPU mode).
 | First words of the answer appear (median) | 2.1 s |
 | Complete answer (median / slowest of 5) | 4.4 s / 6.6 s |
 | Same, limited to 4 CPU threads (closer to a typical laptop) | 6.2 s / 10.1 s |
+| Two-part question in the UI (the recording above), including the LLM hallucination check | ~13 s to full answer, ~24 s until verified |
 
 A typical office laptop is slower than this desktop. As an estimate (not measured), expect roughly 10-40 seconds per answer.
 To re-measure on your machine, run `python benchmark_latency.py` in `original_rag/backend` while the app is running.
