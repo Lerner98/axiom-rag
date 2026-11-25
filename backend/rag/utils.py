@@ -12,7 +12,7 @@ Strategy (in priority order):
 5. Fallback to first N chars
 """
 import re
-from typing import Optional, List, Tuple
+from typing import Optional, List
 
 
 # Common English stopwords to ignore in query matching

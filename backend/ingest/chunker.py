@@ -19,7 +19,7 @@ Benefits:
 - No separate parent store needed (metadata storage)
 """
 import logging
-from typing import List, Optional
+from typing import List
 from uuid import uuid4
 
 from langchain_core.documents import Document

@@ -3,7 +3,6 @@ Ingestion Routes
 Handles document ingestion from various sources.
 """
 import os
-import tempfile
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from typing import Optional
 

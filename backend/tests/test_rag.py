@@ -1,7 +1,7 @@
 """Tests for Agentic RAG Pipeline"""
 import pytest
 import os
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 os.environ.setdefault("OPENAI_API_KEY", "test-key")
 
@@ -131,7 +131,7 @@ class TestAPI:
             mock_instance.store = MagicMock()
             MockVS.return_value = mock_instance
             
-            from main import app
+            from api.main import app
             client = TestClient(app)
             response = client.get("/health")
             

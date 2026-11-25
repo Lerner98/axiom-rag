@@ -19,7 +19,7 @@ Usage:
     )
 """
 import logging
-from typing import Optional, Any
+from typing import Any
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)

@@ -32,7 +32,6 @@ from api.models import (
     ChatDeleteResponse,
     DocumentPreviewResponse,
 )
-from config.settings import settings
 from rag.pipeline import RAGPipeline
 from memory import memory_store
 from vectorstore.store import VectorStore

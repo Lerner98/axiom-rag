@@ -2,7 +2,6 @@
 RAG Evaluation Module
 Implements RAGAS-style metrics + DeepEval patterns
 """
-import os
 from typing import List, Optional, Dict, Any
 from dataclasses import dataclass, field
 from langchain_openai import ChatOpenAI
@@ -132,7 +131,7 @@ Return ONLY a decimal number between 0.0 and 1.0:"""
         result = self.llm.invoke(prompt)
         try:
             return float(result.content.strip())
-        except:
+        except Exception:
             return 0.5
     
     def evaluate_context_precision(
@@ -197,7 +196,7 @@ Return ONLY a decimal number:"""
         result = self.llm.invoke(prompt)
         try:
             return float(result.content.strip())
-        except:
+        except Exception:
             return 0.5
     
     def evaluate_coherence(self, answer: str) -> float:
@@ -215,7 +214,7 @@ Return ONLY a decimal number:"""
         result = self.llm.invoke(prompt)
         try:
             return float(result.content.strip())
-        except:
+        except Exception:
             return 0.5
     
     def evaluate(

@@ -23,7 +23,7 @@ References:
 - RRF Paper: https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf
 """
 import logging
-from typing import List, Tuple, Dict, Optional, Any
+from typing import List, Tuple, Dict, Optional
 from dataclasses import dataclass, field
 
 from rank_bm25 import BM25Okapi

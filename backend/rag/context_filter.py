@@ -10,7 +10,7 @@ Usage:
     filtered_docs = filter.filter(documents, query, threshold=0.3)
 """
 import logging
-from typing import List, Dict, Tuple
+from typing import List, Dict
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)

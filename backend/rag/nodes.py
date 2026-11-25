@@ -17,7 +17,7 @@ import re
 
 from langchain_core.documents import Document
 
-from rag.state import RAGState, Document as StateDocument
+from rag.state import RAGState
 from rag.prompts import (
     QUERY_REWRITE_PROMPT,
     GENERATION_PROMPT,
@@ -331,7 +331,7 @@ class RAGNodes:
             if isinstance(page, str):
                 try:
                     page = int(page)
-                except:
+                except Exception:
                     page = 9999
             parent_idx = meta.get('parent_index', 0) or 0
             child_idx = meta.get('child_index', 0) or 0
@@ -865,9 +865,9 @@ class RAGNodes:
         score = fast_score
         if "SCORE:" in analysis:
             try:
-                score_line = [l for l in analysis.split("\n") if "SCORE:" in l][0]
+                score_line = [line for line in analysis.split("\n") if "SCORE:" in line][0]
                 score = float(score_line.split(":")[1].strip())
-            except:
+            except Exception:
                 pass
         
         # Parse issues
@@ -877,7 +877,7 @@ class RAGNodes:
                 issues_line = analysis.split("ISSUES:")[1].strip()
                 if issues_line.lower() != "none":
                     issues = issues_line
-            except:
+            except Exception:
                 pass
         
         return {

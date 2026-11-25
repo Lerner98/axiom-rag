@@ -28,7 +28,6 @@ async def run_quality_check():
     from rag.pipeline import RAGPipeline
     from ingest.service import ingestion_service
     import uuid
-    import os
 
     run_id = int(time.time())
     collection_name = f"quality_check_{run_id}"

@@ -14,7 +14,6 @@ Usage:
     python -m pytest tests/test_context_handlers.py -v
 """
 import pytest
-import asyncio
 import sys
 from pathlib import Path
 
@@ -92,7 +91,7 @@ async def test_followup_with_context(memory_with_context, mock_llm):
 
     assert result is not None
     assert result.handler_used == "handle_followup"
-    assert result.needs_rag == False
+    assert result.needs_rag is False
     assert "[Mocked]" in result.answer  # LLM was called
     print(f"\n✓ Followup with context: {result.answer[:80]}...")
 
@@ -112,7 +111,7 @@ async def test_followup_without_context(memory_empty, mock_llm):
 
     assert result is not None
     assert result.handler_used == "handle_followup"
-    assert result.needs_rag == True  # Signals no context available
+    assert result.needs_rag is True  # Signals no context available
     print(f"\n✓ Followup without context: needs_rag={result.needs_rag}")
 
 
@@ -135,7 +134,7 @@ async def test_simplify_with_context(memory_with_context, mock_llm):
 
     assert result is not None
     assert result.handler_used == "handle_simplify"
-    assert result.needs_rag == False
+    assert result.needs_rag is False
     assert "[Mocked]" in result.answer
     print(f"\n✓ Simplify with context: {result.answer[:80]}...")
 
@@ -155,7 +154,7 @@ async def test_simplify_without_context(memory_empty, mock_llm):
 
     assert result is not None
     assert result.handler_used == "handle_simplify"
-    assert result.needs_rag == True
+    assert result.needs_rag is True
     print(f"\n✓ Simplify without context: needs_rag={result.needs_rag}")
 
 
@@ -178,7 +177,7 @@ async def test_deepen_with_context(memory_with_context, mock_llm):
 
     assert result is not None
     assert result.handler_used == "handle_deepen"
-    assert result.needs_rag == False
+    assert result.needs_rag is False
     assert "[Mocked]" in result.answer
     print(f"\n✓ Deepen with context: {result.answer[:80]}...")
 
@@ -198,7 +197,7 @@ async def test_deepen_without_context(memory_empty, mock_llm):
 
     assert result is not None
     assert result.handler_used == "handle_deepen"
-    assert result.needs_rag == True
+    assert result.needs_rag is True
     print(f"\n✓ Deepen without context: needs_rag={result.needs_rag}")
 
 
@@ -221,7 +220,7 @@ async def test_greeting_no_context_needed():
 
     assert result is not None
     assert result.handler_used == "handle_greeting"
-    assert result.needs_rag == False
+    assert result.needs_rag is False
     assert "Hello" in result.answer
     print(f"\n✓ Greeting (no context): {result.answer}")
 
@@ -241,7 +240,7 @@ async def test_gratitude_no_context_needed():
 
     assert result is not None
     assert result.handler_used == "handle_gratitude"
-    assert result.needs_rag == False
+    assert result.needs_rag is False
     print(f"\n✓ Gratitude (no context): {result.answer}")
 
 

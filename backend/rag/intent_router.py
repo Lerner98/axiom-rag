@@ -78,7 +78,7 @@ def layer0_hard_rules(query: str) -> Optional[Tuple[str, float]]:
 
     # Rule 2: No alphabetic characters
     if not any(c.isalpha() for c in query):
-        logger.debug(f"Layer 0: GARBAGE (no letters)")
+        logger.debug("Layer 0: GARBAGE (no letters)")
         return ("garbage", 1.0)
 
     # Rule 3: Pure punctuation/symbols with maybe some letters

@@ -34,7 +34,7 @@ async def run_benchmark():
     run_id = int(time.time())
 
     print("=" * 70)
-    print(f"FULL BENCHMARK - Phase 1 Optimizations")
+    print("FULL BENCHMARK - Phase 1 Optimizations")
     print(f"Run ID: {run_id} (ensures no cache contamination)")
     print("=" * 70)
     print()

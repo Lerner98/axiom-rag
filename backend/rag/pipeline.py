@@ -26,7 +26,7 @@ Changes from V4:
 - Context-aware handlers: followup, simplify, deepen use conversation memory
 - Intent router: 3-layer hybrid (hard rules → semantic → LLM)
 """
-from typing import AsyncGenerator, Optional, List, Dict, Any
+from typing import AsyncGenerator, List, Dict
 import logging
 import asyncio
 
@@ -36,9 +36,6 @@ from rag.state import RAGState, create_initial_state
 from rag.nodes import RAGNodes, needs_rag, should_rewrite, has_relevant_docs, should_retry
 from rag.prompts import (
     GENERATION_PROMPT,
-    GENERATION_WITH_RETRY_PROMPT,
-    HALLUCINATION_CHECK_PROMPT,
-    format_sources_for_prompt,
 )
 from config.settings import settings
 from memory import memory_store

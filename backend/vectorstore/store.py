@@ -246,7 +246,7 @@ class ChromaVectorStore:
         # Batch embed all documents at once
         logger.info(f"Batch embedding {len(texts)} documents...")
         embeddings = self.embeddings.embed_documents(texts)
-        logger.info(f"Batch embedding complete")
+        logger.info("Batch embedding complete")
         
         # Prepare data for batch insert
         ids = [str(uuid.uuid4()) for _ in documents]
