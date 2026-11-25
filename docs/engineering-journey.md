@@ -1,6 +1,6 @@
 # Axiom RAG: The Complete Engineering Journey
 
-**From a 67% quality experimental system to a 100% quality, production-ready RAG pipeline.**
+**From an experimental prototype to a measured, production-ready RAG pipeline.**
 
 > "Quality" in this document is expected-keyword coverage over the 8 benchmark queries
 > (see [benchmark-results.md](benchmark-results.md)), not a human-graded accuracy score.
@@ -48,9 +48,9 @@ We had two RAG implementations to evaluate:
 
 | Metric | original_rag | agentic-rag |
 |--------|-------------|-------------|
-| Tests Passed | **8/8 (100%)** | 5/8 (62.5%) |
-| Avg Quality (keyword coverage) | **94%** | 67% |
-| Avg Latency | **13,952ms** | 28,958ms |
+| Tests Passed | **8/8** | 5/8 (raw results not kept) |
+| Avg Quality (keyword coverage) | **94%** (`test-results-original_rag.json`, commit `2cbf22d`) | not recorded |
+| Avg Latency | **30,983 ms** (same recorded run) | not recorded |
 
 ### Critical Failures in agentic-rag
 
@@ -413,7 +413,6 @@ if query_complexity == "simple":
 |--------|--------|-------|-------------|
 | Simple Query Avg | ~34s | ~15s | **-56%** |
 | Overall Avg | ~34s | 25.1s | **-26%** |
-| Quality | 96% | 100% | **+4%** |
 
 ---
 
@@ -454,7 +453,7 @@ For each query:
 | SQL vs NoSQL | Complete comparison table | Exact match | EXCELLENT |
 | Sharding | All 4 types correctly identified | All correct | EXCELLENT |
 
-**Quality Score: 6/6 (100%)**
+**Result: 6/6 test queries passed**
 
 The "consistent hashing" test was critical - the LLM correctly refused to answer rather than hallucinate.
 
@@ -560,7 +559,6 @@ answers that took over 30 seconds.
 
 | Metric | Baseline | Current | Improvement |
 |--------|----------|---------|-------------|
-| Quality | 94% | **100%** | +6% |
 | Avg Latency | 34s | **25.1s** | -26% |
 | Simple Query | 34s | **~15s** | -56% |
 | Greeting Response | 5-30s | **<100ms** | -99% |
@@ -602,7 +600,7 @@ This journey demonstrates that **systematic engineering beats clever hacks**:
 2. **We found the real bottleneck** - LLM prefill, not retrieval
 3. **We debugged the right layer** - Eventually (after chasing wrong hypotheses)
 4. **We built proper isolation** - Session IDs, collection timestamps, unique runs
-5. **We verified quality** - 100% accuracy, not just fast responses
+5. **We verified quality** - answers checked against the expected content, not just fast responses
 6. **We documented gotchas** - LangGraph silent drops, empty collections, test infrastructure
 
 The result: A RAG system that's both faster AND more accurate than where we started.

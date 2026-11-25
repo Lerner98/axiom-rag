@@ -264,7 +264,7 @@ See [benchmark-results.md](benchmark-results.md) for current CPU-only numbers.
 
 | Metric | Value |
 |--------|-------|
-| Quality | 100% (6/6 tests) |
+| Test queries passed | 6/6 |
 | Avg RAG Latency | 25.1s |
 | Simple Query Avg | 23.8s (K=2) |
 | Complex Query Avg | 37.2s (K=5) |

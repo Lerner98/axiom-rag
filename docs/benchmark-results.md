@@ -34,11 +34,10 @@ LLM hallucination check.
 
 ### Summary
 
-Phase 1 optimizations achieved **23% latency reduction** while maintaining **100% quality**.
+Phase 1 optimizations achieved **23% latency reduction** while all 8 benchmark queries still passed.
 
 | Metric | Baseline | Phase 1 | Change |
 |--------|----------|---------|--------|
-| Quality | 96% (8/8) | **100% (8/8)** | +4% |
 | Avg RAG Latency | ~34s | **26.02s** | **-23%** |
 | Simple Query Avg | ~34s | **23.79s** | **-30%** |
 | Complex Query Avg | ~34s | 37.18s | +9% |
@@ -263,11 +262,11 @@ Verify that LLM outputs are **actually correct** by comparing answers against th
 | Database sharding | 46.1s | 649 chars | ✅ Excellent |
 
 **Average Latency:** 25.1s
-**Quality Score:** 6/6 (100%)
+**Result:** 6/6 test queries passed
 
 ## Key Findings
 
-### 1. Quality is 100% Verified
+### 1. All test queries still pass
 All answers are grounded in the source document. The LLM correctly:
 - Reproduced factual content accurately
 - Refused to answer when information wasn't available (consistent hashing)
@@ -291,14 +290,14 @@ The **3x latency difference** (4.5s vs 46.1s) is directly correlated with **answ
 ## Conclusion
 
 **Phase 1 optimizations are validated:**
-- Quality: 100% (all answers correct and grounded)
+- All 6 test queries passed
 - Latency: 25.1s average (down from ~34s baseline)
 - The remaining latency is LLM generation time, not pipeline overhead
 
 **Phase 2 Recommendation (Gemini's analysis confirmed):**
 Using a 3B model for simple queries would reduce token generation time by ~2-3x, potentially achieving 10-15s average latency while maintaining quality for simple factual lookups.
 
-### Quality run (8-query internal rubric)
+### Baseline quality run (recorded in `test-results-original_rag.json`, commit `2cbf22d`)
 
 | Metric | Target | Achieved | Status |
 |--------|--------|----------|--------|
