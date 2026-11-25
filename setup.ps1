@@ -141,6 +141,13 @@ Write-Host '  Later runs start in under a minute.'
 if (-not (Test-Path $BackendDir) -or -not (Test-Path $FrontendDir)) {
     Fail 'Could not find the app folders next to this script.' 'Run setup.ps1 from the top folder of the Axiom RAG download.'
 }
+# Python packages nest deeply (e.g. ...\.venv\Lib\site-packages\onnxruntime\capi\*.pyd) and
+# Windows can't load a DLL whose full path passes 260 characters, even with long paths enabled.
+if ($Root.Length -gt 120) {
+    Fail "This folder's location is too long for Windows ($($Root.Length) characters):  $Root" `
+         'Move the Axiom folder somewhere shorter, for example C:\Axiom or your Desktop, then run Start-Axiom.bat again.'
+}
+
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
 
 # Files from a downloaded ZIP carry Windows' "from the internet" mark (Zone.Identifier),

@@ -69,6 +69,7 @@ Settings live in `original_rag/backend/.env`. The key ones are `OLLAMA_MODEL`,
 
 | Problem | Fix |
 |---|---|
+| "This folder's location is too long for Windows" | Move the unzipped folder somewhere short, such as `C:\Axiom` or your Desktop. |
 | "Port 8001/8080 is already in use" | Axiom is already running in another window. Close it and try again. |
 | Setup says Python/Node "was installed but this window cannot see it yet" | Close the window and double-click `Start-Axiom.bat` again. |
 | `winget` is missing (older Windows 10) | Install **App Installer** from the Microsoft Store, or install [Python 3.12](https://www.python.org/downloads/), [Node.js LTS](https://nodejs.org/) and [Ollama](https://ollama.com/download) yourself, then run again. |
