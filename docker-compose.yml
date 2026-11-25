@@ -1,0 +1,65 @@
+# Axiom RAG with Docker (CPU by default).
+#   docker compose up --build
+#   open http://localhost:3000
+# First start downloads the model (~2 GB) into a named volume.
+# NVIDIA GPU: docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
+
+services:
+  ollama:
+    image: ollama/ollama:0.40.18
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_KV_CACHE_TYPE=q8_0
+      - OLLAMA_FLASH_ATTENTION=1
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  # One-shot: download the model into the ollama volume, then exit.
+  model:
+    image: ollama/ollama:0.40.18
+    entrypoint: ["ollama", "pull", "${OLLAMA_MODEL:-llama3.2:3b}"]
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build: ./backend
+    ports:
+      - "8001:8001"
+    environment:
+      - LLM_PROVIDER=ollama
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2:3b}
+      - COMPUTE_DEVICE=${COMPUTE_DEVICE:-cpu}
+      - MEMORY_BACKEND=sqlite
+      - CORS_ORIGINS=["http://localhost:3000","http://127.0.0.1:3000"]
+    volumes:
+      - api_data:/app/data
+    depends_on:
+      model:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8001
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  ollama_models:
+  api_data:
