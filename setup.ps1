@@ -205,6 +205,10 @@ if (-not $OllamaExe) {
 }
 if (-not (Test-Url "$OllamaUrl/api/tags")) {
     Info 'Starting Ollama in the background...'
+    # Server-level tuning (only applies when we start Ollama ourselves):
+    # quantized KV cache + flash attention cut memory use and prefill time.
+    $env:OLLAMA_KV_CACHE_TYPE  = 'q8_0'
+    $env:OLLAMA_FLASH_ATTENTION = '1'
     Start-Process -FilePath $OllamaExe -ArgumentList 'serve' -WindowStyle Hidden `
         -RedirectStandardOutput (Join-Path $LogDir 'ollama.log') -RedirectStandardError (Join-Path $LogDir 'ollama.err.log')
     $deadline = (Get-Date).AddSeconds(60)
