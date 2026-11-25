@@ -208,4 +208,4 @@ verification loops, and I reviewed every change before it landed.
 
 ## License
 
-MIT
+[MIT](LICENSE)
