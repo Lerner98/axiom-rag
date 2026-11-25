@@ -24,6 +24,11 @@ LLM hallucination check.
 
 ## History: Phase 1 optimization (GPU, `llama3.1:8b`)
 
+> **What "quality" means here:** the share of expected keywords a query's answer contains
+> (e.g. *consistency, availability, partition* for "What is the CAP theorem?"), averaged over the
+> 8 test queries. Raw per-query results were recorded in `test-results-original_rag.json`
+> (commit `2cbf22d`). It is a coverage check, not a human-graded accuracy score.
+
 **Date:** 2024-12-23
 **Branch:** `feature/adaptive-context-optimization`
 
@@ -297,9 +302,9 @@ Using a 3B model for simple queries would reduce token generation time by ~2-3x,
 
 | Metric | Target | Achieved | Status |
 |--------|--------|----------|--------|
-| **Accuracy** | ≥80% | **94%** | PASS |
+| **Avg keyword coverage** | ≥80% | **94%** | PASS |
 | **Reliability** | 8/8 tests | **8/8 (100%)** | PASS |
-| **Min Quality** | ≥70% | **85%** | PASS |
+| **Min keyword coverage** | ≥70% | **85%** | PASS |
 
 ### Query Type Performance
 | Query Type | Quality | Latency |

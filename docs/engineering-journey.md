@@ -2,6 +2,9 @@
 
 **From a 67% quality experimental system to a 100% quality, production-ready RAG pipeline.**
 
+> "Quality" in this document is expected-keyword coverage over the 8 benchmark queries
+> (see [benchmark-results.md](benchmark-results.md)), not a human-graded accuracy score.
+
 *This document chronicles the systematic optimization decisions, debugging adventures, and architectural evolution that shaped Axiom RAG.*
 
 ---
@@ -46,7 +49,7 @@ We had two RAG implementations to evaluate:
 | Metric | original_rag | agentic-rag |
 |--------|-------------|-------------|
 | Tests Passed | **8/8 (100%)** | 5/8 (62.5%) |
-| Avg Quality | **94%** | 67% |
+| Avg Quality (keyword coverage) | **94%** | 67% |
 | Avg Latency | **13,952ms** | 28,958ms |
 
 ### Critical Failures in agentic-rag
@@ -528,6 +531,26 @@ Is this task deterministic?
           ├── YES → Use LLM with verification
           └── NO  → Consider fast heuristic with LLM fallback
 ```
+
+---
+
+## Streaming UX: from a frozen screen to live progress
+
+*(Folded in from the former UX changelog. Layout and interaction rationale: [ux-design.md](ux-design.md).)*
+
+**Problem.** The first streaming endpoint was "fake streaming": the whole pipeline ran, then the
+finished answer was split into words and replayed. Sources arrived after the answer, and the UI showed
+"Searching documents..." for up to 90 seconds with no events at all.
+
+**Fix (V6 true streaming).** `pipeline.astream()` was rewritten to emit events as the graph runs:
+`phase: searching` -> `sources` (before generation starts) -> `phase: generating` -> one `token` event
+per LLM token -> `done` (with `was_grounded` and processing time). The SSE route forwards them as they
+happen, and the frontend store tracks `searching -> found_sources -> generating -> complete`.
+
+**Result.** The user sees progress immediately and the sources first, which builds trust; total time is
+unchanged but feels much faster. Supporting UX: a three-phase progress indicator, a
+Verified/Unverified badge driven by the hallucination check, and a processing-time label shown only for
+answers that took over 30 seconds.
 
 ---
 
