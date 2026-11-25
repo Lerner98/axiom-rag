@@ -1,0 +1,17 @@
+# Optional NVIDIA GPU override (needs the NVIDIA Container Toolkit / Docker Desktop GPU support):
+#   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
+services:
+  ollama:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+  model:
+    entrypoint: ["ollama", "pull", "${OLLAMA_MODEL:-llama3.1:8b}"]
+  api:
+    environment:
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1:8b}
+      - COMPUTE_DEVICE=gpu

@@ -1,5 +1,5 @@
-# Agentic RAG - Frontend Dockerfile
-FROM node:20-alpine as builder
+# Axiom RAG frontend: static Vite build served by nginx on port 3000
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 

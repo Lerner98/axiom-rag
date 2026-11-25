@@ -1,82 +1,65 @@
-version: '3.8'
+# Axiom RAG with Docker (CPU by default).
+#   docker compose up --build
+#   open http://localhost:3000
+# First start downloads the model (~2 GB) into a named volume.
+# NVIDIA GPU: docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
 
 services:
-  # === Backend API ===
+  ollama:
+    image: ollama/ollama:0.40.18
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_KV_CACHE_TYPE=q8_0
+      - OLLAMA_FLASH_ATTENTION=1
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  # One-shot: download the model into the ollama volume, then exit.
+  model:
+    image: ollama/ollama:0.40.18
+    entrypoint: ["ollama", "pull", "${OLLAMA_MODEL:-llama3.2:3b}"]
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: "no"
+
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: ./backend
     ports:
       - "8001:8001"
     environment:
-      - DEBUG=false
-      - API_HOST=0.0.0.0
-      - API_PORT=8001
-      - LLM_PROVIDER=${LLM_PROVIDER:-ollama}
+      - LLM_PROVIDER=ollama
       - OLLAMA_BASE_URL=http://ollama:11434
-      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1:8b}
-      - EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER:-fastembed}
-      - VECTOR_PROVIDER=chroma
-      - MEMORY_BACKEND=redis
-      - REDIS_URL=redis://redis:6379
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2:3b}
+      - COMPUTE_DEVICE=${COMPUTE_DEVICE:-cpu}
+      - MEMORY_BACKEND=sqlite
+      - CORS_ORIGINS=["http://localhost:3000","http://127.0.0.1:3000"]
+    volumes:
+      - api_data:/app/data
     depends_on:
-      - redis
-      - ollama
-    volumes:
-      - ./data:/app/data
-    networks:
-      - rag-network
+      model:
+        condition: service_completed_successfully
     restart: unless-stopped
 
-  # === Cache / Memory ===
-  redis:
-    image: redis:alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - rag-network
-    restart: unless-stopped
-
-  # === LLM (Ollama) ===
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    networks:
-      - rag-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
-
-  # === Frontend ===
   frontend:
     build:
-      context: ../frontend
-      dockerfile: Dockerfile
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8001
     ports:
       - "3000:3000"
-    environment:
-      - VITE_API_URL=http://localhost:8001
     depends_on:
-      - api
-    networks:
-      - rag-network
+      api:
+        condition: service_healthy
     restart: unless-stopped
 
-networks:
-  rag-network:
-    driver: bridge
-
 volumes:
-  redis_data:
-  ollama_data:
-  chroma_data:
+  ollama_models:
+  api_data:
