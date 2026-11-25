@@ -1,6 +1,6 @@
 # Axiom RAG
 
-[![CI](https://github.com/Lerner98/axiom-rag-new/actions/workflows/ci.yml/badge.svg)](https://github.com/Lerner98/axiom-rag-new/actions/workflows/ci.yml)
+[![CI](https://github.com/Lerner98/axiom-rag/actions/workflows/ci.yml/badge.svg)](https://github.com/Lerner98/axiom-rag/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 **Ask questions about your own documents and get answers with their sources, entirely on your own computer.**
