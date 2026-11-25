@@ -1,7 +1,6 @@
 # Axiom RAG - Project Architecture
 
-**Generated from:** `original_rag.toon` codebase index
-**Date:** 2024-12-23
+**Written:** December 2024 (pipeline design); paths updated for the current layout.
 
 ---
 
@@ -9,7 +8,7 @@
 
 Axiom RAG is a local-first, self-correcting Retrieval Augmented Generation system built with LangGraph orchestration. The system emphasizes **grounded answers** (no hallucinations) and **intent-aware routing** for optimal response times.
 
-### Key Stats (from Toonify index)
+### Key Stats
 - **Total Files:** 89 Python files
 - **Total Functions:** 400+
 - **Languages:** Python (backend), TypeScript (frontend)
@@ -247,29 +246,21 @@ OLLAMA_NUM_CTX = 4096
 
 ---
 
-## 7. Testing & Benchmarks (`backend/`)
+## 7. Testing & Benchmarks
 
 | File | Purpose |
 |------|---------|
-| **benchmark_e2e.py** | Full E2E benchmark with document ingestion |
-| **benchmark_quality.py** | Quality verification with output analysis |
-| **test_latency.py** | Quick latency spot-check |
-| **tests/test_rag.py** | Unit tests |
+| **tests/** | Unit tests (pytest, LLM mocked; run in CI) |
+| **scripts/benchmark_latency.py** | End-to-end latency through the running API |
+| **scripts/benchmark_e2e.py** | Full E2E benchmark with document ingestion |
+| **scripts/benchmark_quality.py** | Quality verification with output analysis |
+| **scripts/check_latency.py** | Quick latency spot-check |
 
 ---
 
-## 8. Archive (`archive/`)
+## Performance at the time (Phase 1, GPU `llama3.1:8b`)
 
-Historical versions preserved for debugging and diffing:
-- `nodes.py` versions 1-10
-- `pipeline.py` versions 1-6
-- Various backup configurations
-
-**Note:** Consider moving to separate git branch after Phase 2 stabilization to keep production codebase lean.
-
----
-
-## Current Performance (Phase 1)
+See [benchmark-results.md](benchmark-results.md) for current CPU-only numbers.
 
 | Metric | Value |
 |--------|-------|
@@ -299,7 +290,7 @@ Historical versions preserved for debugging and diffing:
 ## File Tree (Key Paths)
 
 ```
-original_rag/
+
 ├── backend/
 │   ├── rag/
 │   │   ├── nodes.py           # Core logic + Phase 1 optimizations
@@ -319,7 +310,7 @@ original_rag/
 │   │   ├── stores/chatStore.ts
 │   │   └── components/chat/
 │   └── package.json
-├── test-docs/                  # Test documents
-├── BENCHMARK_RESULTS.md        # Performance documentation
+├── docs/                       # Architecture, benchmarks, postmortems
+├── sample-docs/                # Sample document for trying the app
 └── README.md                   # Project overview
 ```

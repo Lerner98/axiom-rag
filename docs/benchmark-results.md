@@ -1,9 +1,33 @@
-# RAG Pipeline Optimization - Phase 1 Results
+# Benchmark Results
+
+> **Two sets of numbers.** The current CPU-only measurements come first and match the README.
+> Everything below them is the **original optimization history**, measured with
+> `llama3.1:8b` on a 6 GB GPU against an internal 8-query rubric; it shows how the
+> pipeline was tuned, not what a CPU-only machine will see.
+
+## Current: CPU-only (`llama3.2:3b`, `COMPUTE_DEVICE=cpu`)
+
+Measured with `backend/scripts/benchmark_latency.py` (5 questions over
+`sample-docs/northwind-remote-work-policy.md`, through the HTTP API) on an Intel Core Ultra 9 285K,
+GPU unused (`ollama ps`: 100% CPU).
+
+| Metric | All threads | Limited to 4 threads |
+|---|---|---|
+| First words of the answer (median) | 2.1 s | 3.1 s |
+| Complete answer (median) | 4.5 s | 6.2 s |
+| Complete answer (slowest of 5) | 6.8 s | 10.1 s |
+
+A two-part question in the UI takes about 13 s to the full answer and about 24 s including the
+LLM hallucination check.
+
+---
+
+## History: Phase 1 optimization (GPU, `llama3.1:8b`)
 
 **Date:** 2024-12-23
 **Branch:** `feature/adaptive-context-optimization`
 
-## Summary
+### Summary
 
 Phase 1 optimizations achieved **23% latency reduction** while maintaining **100% quality**.
 
@@ -55,7 +79,7 @@ All simple queries correctly triggered:
 
 - `backend/rag/nodes.py` - Adaptive K + hallucination bypass
 - `backend/benchmark_e2e.py` - E2E benchmark script (new)
-- `backend/test_latency.py` - Quick latency test (new)
+- `backend/scripts/check_latency.py` - Quick latency test (new)
 
 ## Next Steps (Phase 2)
 
@@ -268,3 +292,23 @@ The **3x latency difference** (4.5s vs 46.1s) is directly correlated with **answ
 
 **Phase 2 Recommendation (Gemini's analysis confirmed):**
 Using a 3B model for simple queries would reduce token generation time by ~2-3x, potentially achieving 10-15s average latency while maintaining quality for simple factual lookups.
+
+### Quality run (8-query internal rubric)
+
+| Metric | Target | Achieved | Status |
+|--------|--------|----------|--------|
+| **Accuracy** | ≥80% | **94%** | PASS |
+| **Reliability** | 8/8 tests | **8/8 (100%)** | PASS |
+| **Min Quality** | ≥70% | **85%** | PASS |
+
+### Query Type Performance
+| Query Type | Quality | Latency |
+|------------|---------|---------|
+| Simple Factual | 100% | 12.3s |
+| How-To | 100% | 13.0s |
+| Comparison | 100% | 50.0s |
+| Conversational | 100% | 28.6s |
+| Short Query | 90% | 42.4s |
+| Complex Multi-part | 90% | 50.6s |
+| Vague Query | 85% | 40.2s |
+| Out-of-Domain | 85% | 10.7s |
