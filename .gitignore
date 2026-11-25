@@ -1,54 +1,59 @@
-# Archived/deprecated code
-ARCHIVED/
+# === Secrets & local config ===
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets/
 
-# Testing methodology (reference docs, not code)
-testing/
-
-# Python cache
+# === Python ===
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
+*.py[cod]
 *.so
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
 
-# Virtual environments
+# === Virtual environments ===
+.venv/
 venv/
 env/
-.env
 
-# IDE & AI Tools
-.vscode/
-.idea/
-.claude/
-*.swp
-*.swo
+# === Node ===
+node_modules/
+npm-debug.log*
 
-# OS files
-.DS_Store
-Thumbs.db
+# === App data (user documents, vector store, chat memory) ===
+data/
+backend/data/
+backend/chroma_data/
+*.db
+*.sqlite
+*.sqlite3
+
+# === Logs (setup.ps1 writes to logs/) ===
+logs/
 *.log
 
-# Node modules (frontend has its own)
-node_modules/
-
-# Build outputs
-dist/
-build/
-*.egg-info/
-
-# ChromaDB data (regenerated)
-original_rag/backend/chroma_data/
-
-# Temporary files
-*.tmp
-*.temp
+# === Editors, OS, tools ===
+.idea/
+.vscode/
+.claude/
+*.swp
+*~
+.DS_Store
+Thumbs.db
 nul
 
-# Logs written by setup.ps1
-logs/
-.venv/
+# === Docker ===
+docker-compose.override.yml
 
-# Local AI-agent instructions (kept on the developer machine, not published)
+# === Local AI-agent instructions (kept on the developer machine, not published) ===
 CLAUDE.md
 **/CLAUDE.md

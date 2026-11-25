@@ -49,7 +49,7 @@ processor (CPU mode), or `llama3.2:1b` on PCs with less than 8 GB of memory.
 | Two-part question in the UI (the recording above), including the LLM hallucination check | ~13 s to full answer, ~24 s until verified |
 
 A typical office laptop is slower than this desktop. As an estimate (not measured), expect roughly 10-40 seconds per answer.
-To re-measure on your machine, run `python benchmark_latency.py` in `original_rag/backend` while the app is running.
+To re-measure on your machine, run `python benchmark_latency.py` in `backend` while the app is running.
 
 ### Options
 
@@ -62,7 +62,7 @@ Run from PowerShell in the project folder (or pass the same options to `Start-Ax
 .\setup.ps1 -InstallOnly              # install everything, don't start
 ```
 
-Settings live in `original_rag/backend/.env`. The key ones are `OLLAMA_MODEL`,
+Settings live in `backend/.env`. The key ones are `OLLAMA_MODEL`,
 `COMPUTE_DEVICE` (`auto` / `cpu` / `gpu`) and `OLLAMA_NUM_THREAD`. Logs are written to `logs/`.
 
 ### Troubleshooting
@@ -133,7 +133,7 @@ original_rag/
 
 ## Documentation
 
-Technical documentation is available in `original_rag/docs/`:
+Technical documentation is available in `docs/`:
 
 - `PROJECT_ARCHITECTURE.md` - System design and component overview
 - `RAG_Pipeline_Architecture.md` - Detailed pipeline documentation

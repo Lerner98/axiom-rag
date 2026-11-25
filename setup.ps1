@@ -39,8 +39,8 @@ $ErrorActionPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'   # makes Invoke-WebRequest much faster
 
 $Root        = $PSScriptRoot
-$BackendDir  = Join-Path $Root 'original_rag\backend'
-$FrontendDir = Join-Path $Root 'original_rag\frontend'
+$BackendDir  = Join-Path $Root 'backend'
+$FrontendDir = Join-Path $Root 'frontend'
 $LogDir      = Join-Path $Root 'logs'
 $BackendPort = 8001
 $FrontendPort = 8080

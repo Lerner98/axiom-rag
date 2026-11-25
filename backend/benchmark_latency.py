@@ -16,7 +16,7 @@ from pathlib import Path
 import httpx
 
 API = "http://127.0.0.1:8001"
-DEFAULT_DOC = Path(__file__).resolve().parents[2] / "sample-docs" / "northwind-remote-work-policy.md"
+DEFAULT_DOC = Path(__file__).resolve().parents[1] / "sample-docs" / "northwind-remote-work-policy.md"
 QUESTIONS = [
     "How much is the home-office stipend?",
     "What are the core hours for remote employees?",
