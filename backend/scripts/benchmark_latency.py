@@ -2,7 +2,8 @@
 End-to-end answer latency through the running API (upload -> ask -> stream).
 
 Usage (backend must be running on :8001):
-    .venv\\Scripts\\python benchmark_latency.py [--runs 1] [--doc PATH]
+    cd backend
+    .venv\\Scripts\\python scripts\\benchmark_latency.py [--runs 1] [--doc PATH]
 
 Prints time-to-first-token and total time for each question, plus medians.
 """
@@ -16,7 +17,7 @@ from pathlib import Path
 import httpx
 
 API = "http://127.0.0.1:8001"
-DEFAULT_DOC = Path(__file__).resolve().parents[1] / "sample-docs" / "northwind-remote-work-policy.md"
+DEFAULT_DOC = Path(__file__).resolve().parents[2] / "sample-docs" / "northwind-remote-work-policy.md"
 QUESTIONS = [
     "How much is the home-office stipend?",
     "What are the core hours for remote employees?",

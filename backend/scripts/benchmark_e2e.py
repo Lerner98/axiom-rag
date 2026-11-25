@@ -15,7 +15,11 @@ import os
 sys.path.insert(0, '.')
 
 # Test document path
-TEST_DOC_PATH = r"c:\Users\guyle\Desktop\Toon\original_rag\RAG_Scale_Tests\doc_a_large.pdf"
+# Document to benchmark against: set AXIOM_BENCH_DOC, or use the bundled sample.
+TEST_DOC_PATH = os.environ.get(
+    "AXIOM_BENCH_DOC",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "sample-docs", "northwind-remote-work-policy.md"),
+)
 
 # 8 Test queries - mix of simple and complex
 TEST_QUERIES = [

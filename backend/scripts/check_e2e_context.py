@@ -1,6 +1,6 @@
 """
 End-to-End Test: Context-Aware Handlers
-Run from backend directory: python test_e2e_context.py
+Run from backend directory: python scripts/check_e2e_context.py
 """
 import asyncio
 import sys

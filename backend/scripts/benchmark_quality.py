@@ -4,10 +4,15 @@ Shows FULL LLM outputs and lets us verify against source document.
 """
 import asyncio
 import time
+import os
 import sys
 sys.path.insert(0, '.')
 
-TEST_DOC_PATH = r"c:\Users\guyle\Desktop\Toon\original_rag\test-docs\system-design-primer.txt"
+# Document to benchmark against: set AXIOM_BENCH_DOC, or use the bundled sample.
+TEST_DOC_PATH = os.environ.get(
+    "AXIOM_BENCH_DOC",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "sample-docs", "northwind-remote-work-policy.md"),
+)
 
 # 6 RAG queries to verify quality
 TEST_QUERIES = [

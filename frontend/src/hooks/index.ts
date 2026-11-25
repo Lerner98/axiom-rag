@@ -1,3 +1,3 @@
 export * from './useChat';
-export * from './use-mobile';
-export * from './use-toast';
+export * from './useMobile';
+export * from './useToast';
