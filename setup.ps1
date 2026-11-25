@@ -203,18 +203,24 @@ if (-not $OllamaExe) {
     elseif (Test-Command 'ollama') { $OllamaExe = (Get-Command 'ollama').Source }
     else { Fail 'Ollama install did not finish.' 'Install it from https://ollama.com/download and run this again.' }
 }
-if (-not (Test-Url "$OllamaUrl/api/tags")) {
+# Start Ollama if it isn't answering. Also called again before the model is loaded,
+# so setup recovers if Ollama stopped while packages were installing.
+function Confirm-Ollama {
+    if (Test-Url "$OllamaUrl/api/tags") { return }
     Info 'Starting Ollama in the background...'
     # Server-level tuning (only applies when we start Ollama ourselves):
     # quantized KV cache + flash attention cut memory use and prefill time.
     $env:OLLAMA_KV_CACHE_TYPE  = 'q8_0'
     $env:OLLAMA_FLASH_ATTENTION = '1'
+    $stamp = Get-Date -Format 'HHmmss'
     Start-Process -FilePath $OllamaExe -ArgumentList 'serve' -WindowStyle Hidden `
-        -RedirectStandardOutput (Join-Path $LogDir 'ollama.log') -RedirectStandardError (Join-Path $LogDir 'ollama.err.log')
+        -RedirectStandardOutput (Join-Path $LogDir "ollama-$stamp.log") `
+        -RedirectStandardError (Join-Path $LogDir "ollama-$stamp.err.log")
     $deadline = (Get-Date).AddSeconds(60)
     while (-not (Test-Url "$OllamaUrl/api/tags") -and (Get-Date) -lt $deadline) { Start-Sleep -Seconds 1 }
-    if (-not (Test-Url "$OllamaUrl/api/tags")) { Fail 'Ollama did not start.' "See $LogDir\ollama.err.log" }
+    if (-not (Test-Url "$OllamaUrl/api/tags")) { Fail 'Ollama did not start.' "See the ollama-$stamp.err.log file in $LogDir" }
 }
+Confirm-Ollama
 Ok 'Ollama is running'
 
 # ------------------------------------------------- 4. CPU or GPU, model ---
@@ -372,6 +378,7 @@ while (-not (Test-Url "http://127.0.0.1:$FrontendPort" 3) -and (Get-Date) -lt $d
 }
 Ok "Web interface running on http://localhost:$FrontendPort"
 
+Confirm-Ollama
 Info 'Loading the AI model into memory (first answer is faster after this)...'
 try {
     $body = @{ model = $Model; prompt = 'Hi'; stream = $false; options = @{ num_predict = 1 } }
