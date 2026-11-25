@@ -83,10 +83,10 @@ class OllamaEmbeddings(Embeddings):
         base_url: str = "http://localhost:11434",
     ):
         try:
-            from langchain_community.embeddings import OllamaEmbeddings as LCOllamaEmbeddings
+            from langchain_ollama import OllamaEmbeddings as LCOllamaEmbeddings
         except ImportError:
             raise ImportError(
-                "langchain-community is required. Install with: pip install langchain-community"
+                "langchain-ollama is required. Install with: pip install langchain-ollama"
             )
         
         logger.info(f"Initializing Ollama embeddings: {model_name}")

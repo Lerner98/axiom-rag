@@ -20,7 +20,12 @@ class Settings(BaseSettings):
     api_host: str = Field(default="0.0.0.0", env="API_HOST")
     api_port: int = Field(default=8001, env="API_PORT")
     cors_origins: list[str] = Field(
-        default=["http://localhost:3000", "http://localhost:5173"],
+        default=[
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://localhost:8080",
+            "http://127.0.0.1:8080",
+        ],
         env="CORS_ORIGINS"
     )
     
@@ -36,6 +41,17 @@ class Settings(BaseSettings):
     # Ollama
     ollama_base_url: str = Field(default="http://localhost:11434", env="OLLAMA_BASE_URL")
     ollama_model: str = Field(default="llama3.1:8b", env="OLLAMA_MODEL")
+
+    # Compute device for the local LLM:
+    #   "auto" - let Ollama decide (uses a GPU if it finds one, else CPU)
+    #   "cpu"  - force CPU-only inference (num_gpu=0); use with a small model
+    #            such as llama3.2:3b on machines without a capable GPU
+    #   "gpu"  - offload every layer to the GPU
+    compute_device: Literal["auto", "cpu", "gpu"] = Field(
+        default="auto", env="COMPUTE_DEVICE"
+    )
+    # CPU threads for Ollama (0 = let Ollama choose, usually physical cores)
+    ollama_num_thread: int = Field(default=0, env="OLLAMA_NUM_THREAD")
 
     # Ollama Performance Tuning
     # KV cache quantization: "f16" (default), "q8_0" (faster, less memory), "q4_0" (fastest)
@@ -141,6 +157,17 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
     
+    def ollama_device_options(self) -> dict:
+        """Ollama runtime options that pin the model to CPU or GPU."""
+        opts: dict = {}
+        if self.compute_device == "cpu":
+            opts["num_gpu"] = 0
+        elif self.compute_device == "gpu":
+            opts["num_gpu"] = 999  # offload all layers
+        if self.ollama_num_thread > 0:
+            opts["num_thread"] = self.ollama_num_thread
+        return opts
+
     def ensure_directories(self) -> None:
         """Create required directories if they don't exist."""
         self.data_dir.mkdir(parents=True, exist_ok=True)

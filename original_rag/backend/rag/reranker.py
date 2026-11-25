@@ -201,7 +201,7 @@ class OllamaReranker(BaseReranker):
             return
             
         try:
-            from langchain_community.chat_models import ChatOllama
+            from langchain_ollama import ChatOllama
             self._client = ChatOllama(
                 model=self.model_name,
                 base_url=self.base_url,
@@ -209,8 +209,8 @@ class OllamaReranker(BaseReranker):
             )
         except ImportError:
             raise ImportError(
-                "langchain-community is required for OllamaReranker. "
-                "Install with: pip install langchain-community"
+                "langchain-ollama is required for OllamaReranker. "
+                "Install with: pip install langchain-ollama"
             )
     
     async def predict(self, pairs: List[Tuple[str, str]]) -> List[float]:
