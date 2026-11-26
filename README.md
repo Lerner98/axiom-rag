@@ -9,10 +9,10 @@ Axiom RAG is a local-first document Q&A app: a React frontend and a FastAPI + La
 that combines hybrid search (vectors + BM25), cross-encoder reranking and a hallucination check,
 with a local LLM through Ollama. No cloud services, no API keys, and it runs without a GPU.
 
-https://github.com/user-attachments/assets/2c26e16b-d822-46cb-b583-577d491ad074
+https://github.com/user-attachments/assets/250c865e-c7f3-4fc5-b177-8ee6c2bb24f3
 
 *Real recording on CPU only (no graphics card): upload a policy document, ask a two-part question,
-get the answer with the source it came from.*
+get the answer with the source it came from. The answer check is shown at 4x speed.*
 
 ## Features
 
