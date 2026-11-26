@@ -46,10 +46,15 @@ export interface ChatResponse {
 // This is the subset sent over the wire from backend
 export type SSEStreamingPhase = 'searching' | 'generating';
 
+// Step after generation, sent only when it really runs
+export type SSEStatusStep = 'verifying';
+
 export interface StreamEvent {
-  type: 'phase' | 'token' | 'sources' | 'done' | 'error';
+  type: 'phase' | 'token' | 'sources' | 'status' | 'done' | 'error';
   // Phase event (V6)
   phase?: SSEStreamingPhase;
+  // Status event: the answer is being checked against its sources
+  step?: SSEStatusStep;
   // Token event
   content?: string;
   // Sources event
@@ -57,6 +62,7 @@ export interface StreamEvent {
   // Done event
   message_id?: string;
   was_grounded?: boolean;
+  was_checked?: boolean; // true when a groundedness check actually ran
   processing_time_ms?: number;
   // Error event
   message?: string;

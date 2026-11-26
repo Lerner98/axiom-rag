@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import type { Message, Source } from '@/stores/chatStore';
+import { AnswerCheck } from './AnswerCheck';
+import { answerCheckState } from './answerCheckState';
 
 interface MessageBubbleProps {
   message: Message;
@@ -93,6 +95,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     source.preview
   );
 
+  const checkState = answerCheckState(message);
+
   return (
     <div
       className={cn(
@@ -100,9 +104,10 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         isUser ? 'justify-end' : 'justify-start'
       )}
     >
+      <div className={cn('flex flex-col max-w-[70%]', isUser ? 'items-end' : 'items-start')}>
       <div
         className={cn(
-          'group relative max-w-[70%] rounded-2xl px-4 py-3',
+          'group relative max-w-full rounded-2xl px-4 py-3',
           isUser
             ? 'bg-user-bubble text-user-bubble-foreground rounded-br-md'
             : 'bg-assistant-bubble text-assistant-bubble-foreground border border-assistant-bubble-border rounded-bl-md'
@@ -127,7 +132,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         {/* Message content */}
         <div className="text-sm leading-relaxed whitespace-pre-wrap">
           {message.content}
-          {message.isStreaming && (
+          {message.isStreaming && !message.isVerifying && (
             <span className="inline-block w-0.5 h-4 bg-current ml-0.5 animate-pulse" />
           )}
         </div>
@@ -143,6 +148,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             </div>
           </div>
         )}
+      </div>
+      {checkState && <AnswerCheck state={checkState} />}
       </div>
     </div>
   );

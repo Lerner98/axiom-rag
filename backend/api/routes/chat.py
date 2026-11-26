@@ -73,7 +73,9 @@ async def generate_stream(
     2. sources: [...] - Retrieved documents (BEFORE generation starts)
     3. phase: "generating" - LLM generation starting
     4. token: "..." - Each token as it's generated (TRUE streaming)
-    5. done: {...} - Stream complete with metadata
+    5. status: "verifying" - Answer is being checked against its sources
+       (only sent when a check actually runs)
+    6. done: {...} - Stream complete with metadata (was_checked, was_grounded)
 
     If chat_id is provided, uses chat-scoped collection (chat_{chat_id}).
     Otherwise falls back to collection_name for backward compatibility.
@@ -103,6 +105,12 @@ async def generate_stream(
                 # TRUE streaming token - yield immediately
                 yield json.dumps({'type': 'token', 'content': chunk['content']})
 
+            elif event_type == "status":
+                # Pipeline step after generation (e.g. "verifying" while the
+                # answer is checked against its sources)
+                yield json.dumps({'type': 'status', 'step': chunk.get('step', '')})
+                logger.debug(f"SSE status: {chunk.get('step')}")
+
             elif event_type == "sources":
                 # Sources found - emitted BEFORE generation starts
                 sources = []
@@ -124,6 +132,7 @@ async def generate_stream(
                 done = StreamDone(
                     message_id=message_id,
                     was_grounded=chunk.get("is_grounded", True),
+                    was_checked=chunk.get("was_checked", False),
                     processing_time_ms=processing_time
                 )
                 yield json.dumps(done.model_dump())

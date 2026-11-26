@@ -73,6 +73,7 @@ class StreamDone(BaseModel):
     type: Literal["done"] = "done"
     message_id: str
     was_grounded: bool
+    was_checked: bool = False  # True when a groundedness check actually ran
     processing_time_ms: int
 
 

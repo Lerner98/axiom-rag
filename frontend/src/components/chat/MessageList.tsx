@@ -104,6 +104,7 @@ export function MessageList() {
         sources: currentSources,
         timestamp: new Date(),
         isStreaming: true,
+        isVerifying: streamingPhase === 'verifying',
       }
     : null;
 
@@ -118,7 +119,7 @@ export function MessageList() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, currentStreamingMessage]);
+  }, [messages, currentStreamingMessage, streamingPhase]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.target as HTMLDivElement;

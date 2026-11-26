@@ -118,7 +118,7 @@ with the sources: a fast word/trigram overlap score, with an LLM verdict only fo
 | Retrieval | ChromaDB, FastEmbed (`BAAI/bge-small-en-v1.5`, ONNX), rank-bm25 |
 | Reranking | sentence-transformers cross-encoder (`ms-marco-MiniLM-L-6-v2`) |
 | Storage | SQLite (chat memory), ChromaDB (vectors) |
-| Tooling | ruff, pytest, ESLint, Prettier, GitHub Actions, Docker Compose |
+| Tooling | ruff, pytest, Vitest, ESLint, Prettier, GitHub Actions, Docker Compose |
 
 ## Project structure
 
@@ -183,6 +183,7 @@ cd backend
 cd ..\frontend
 npm run lint
 npm run typecheck
+npm test                                     # Vitest + Testing Library
 npm run build
 ```
 
