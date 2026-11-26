@@ -407,6 +407,15 @@ if query_complexity == "simple":
 
 **Savings: 3-5 seconds for confident simple queries**
 
+**Later finding (2026-11): the shortcut skipped the check it was meant to speed up.** A strong match on the top
+document says nothing about whether the answer stays inside that document. Live testing showed it: asked about
+"the stipend for employees in Japan", the model invented an answer from a policy that never mentions Japan, and
+because the query was simple and the match strong, the answer was never checked. The fix removes the shortcut.
+Every answer with sources now goes through cheap deterministic checks first: numbers and names that appear nowhere
+in the sources flag the answer as going beyond them (this also catches invented citations such as a "Section 4"
+the document doesn't have), and a correct "not in your documents" answer gets its own neutral label. The LLM
+still runs only when the word overlap is ambiguous, so the added cost on CPU was about 0.16 ms per answer.
+
 ### Results
 
 | Metric | Before | After | Improvement |
@@ -570,7 +579,7 @@ answers that took over 30 seconds.
 - [x] Fast Route Query (pattern matching, no LLM)
 - [x] BM25 Persistence (V7)
 - [x] Adaptive K Selection (K=2 for simple, K=5 for complex)
-- [x] Hallucination Bypass (skip for high-confidence simple queries)
+- [x] Answer check on every sourced answer (deterministic first, LLM only if ambiguous; the old high-confidence bypass was removed)
 - [x] Session Isolation (unique session per query)
 - [x] Quality Verification (benchmark_quality.py)
 
