@@ -131,7 +131,7 @@ def test_not_found_detection(answer, expected):
 @pytest.mark.asyncio
 async def test_done_event_carries_not_found():
     from types import SimpleNamespace
-    from tests.test_verifying_status import make_pipeline, collect
+    from test_verifying_status import make_pipeline, collect
 
     pipe = make_pipeline()
     pipe.nodes.check_hallucination = AsyncMock(return_value={"is_grounded": True, "answer_not_found": True})
