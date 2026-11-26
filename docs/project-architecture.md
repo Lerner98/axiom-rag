@@ -6,7 +6,7 @@
 
 ## Project Overview
 
-Axiom RAG is a local-first, self-correcting Retrieval Augmented Generation system built with LangGraph orchestration. The system emphasizes **grounded answers** (no hallucinations) and **intent-aware routing** for optimal response times.
+Axiom RAG is a local-first, self-correcting Retrieval Augmented Generation system built with LangGraph orchestration. The system emphasizes **grounded answers** (checked against their sources) and **intent-aware routing** for optimal response times.
 
 ### Key Stats
 - **Total Files:** 89 Python files

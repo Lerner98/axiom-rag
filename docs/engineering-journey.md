@@ -32,7 +32,7 @@
 Build a **local-first, self-correcting RAG system** that:
 - Runs 100% locally (no data leaves your machine)
 - Cites its sources (every answer shows where it came from)
-- Checks itself (built-in hallucination detection)
+- Checks its answers against their sources
 - Understands intent (knows the difference between "hi" and "What is CAP theorem?")
 
 ### Two Competing Implementations

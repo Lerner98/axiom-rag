@@ -6,20 +6,20 @@
 **Ask questions about your own documents and get answers with their sources, entirely on your own computer.**
 
 Axiom RAG is a local-first document Q&A app: a React frontend and a FastAPI + LangGraph backend
-that combines hybrid search (vectors + BM25), cross-encoder reranking and a hallucination check,
+that combines hybrid search (vectors + BM25), cross-encoder reranking and a check of each answer against its sources,
 with a local LLM through Ollama. No cloud services, no API keys, and it runs without a GPU.
 
-https://github.com/user-attachments/assets/250c865e-c7f3-4fc5-b177-8ee6c2bb24f3
+https://github.com/user-attachments/assets/d03e4569-9bae-48a9-8225-4201de1d4016
 
 *Real recording on CPU only (no graphics card): upload a policy document, ask a two-part question,
-get the answer with the source it came from. The answer check is shown at 4x speed.*
+get the answer with the source it came from, then see the answer checked against that source. Real speed.*
 
 ## Features
 
 - **Documents:** PDF, Word (.docx), TXT and Markdown, split into parent-child chunks
 - **Hybrid retrieval:** FastEmbed vectors in ChromaDB plus BM25 keyword search, fused with RRF
 - **Reranking:** a cross-encoder (`ms-marco-MiniLM-L-6-v2`) picks the passages the LLM sees
-- **Grounded answers:** every answer cites its sources; a hybrid check (deterministic + LLM) flags ungrounded answers
+- **Grounded answers:** every answer cites its sources, and a hybrid check (deterministic + LLM) compares it with them and shows the result under the answer
 - **Intent routing:** greetings and follow-ups skip retrieval; questions take a fast or a full path
 - **Streaming:** sources arrive first, then the answer token by token
 - **Isolation:** each chat has its own document collection and conversation memory
@@ -49,7 +49,7 @@ finds one, it uses `llama3.1:8b` on the GPU. Otherwise it runs `llama3.2:3b` on 
 | First words of the answer (median) | 2.1 s |
 | Complete answer (median / slowest of 5) | 4.5 s / 6.8 s |
 | Same, limited to 4 CPU threads (closer to a typical laptop) | 6.2 s / 10.1 s |
-| Two-part question in the UI (the recording above) | ~13 s to full answer, ~24 s with the hallucination check |
+| Two-part question in the UI (the recording above) | ~13 s to full answer, ~24 s with the answer check |
 
 A typical office laptop is slower than this desktop. As an estimate (not measured), expect roughly
 10-40 seconds per answer. Details: [docs/benchmark-results.md](docs/benchmark-results.md).
@@ -91,7 +91,7 @@ flowchart LR
         I["Intent router<br/>rules, embeddings, LLM"] --> R["Hybrid retrieval<br/>vectors + BM25, RRF fusion"]
         R --> RR["Cross-encoder rerank<br/>+ context filter"]
         RR --> GEN["Generate<br/>(streamed)"]
-        GEN --> H["Hallucination check<br/>fast heuristic, LLM if unsure"]
+        GEN --> H["Answer check<br/>fast heuristic, LLM if unsure"]
     end
 
     R <--> C[("ChromaDB<br/>FastEmbed vectors")]
