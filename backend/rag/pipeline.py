@@ -267,7 +267,10 @@ class RAGPipeline:
         2. {"type": "sources", "sources": [...]} - Sources found (BEFORE generation)
         3. {"type": "phase", "phase": "generating"} - LLM generation starting
         4. {"type": "token", "content": "..."} - Each token as generated
-        5. {"type": "done", ...} - Stream complete with metadata
+        5. {"type": "status", "step": "verifying"} - Groundedness check starting
+           (only when a check actually runs)
+        6. {"type": "done", ...} - Stream complete; was_checked says whether a
+           check ran, is_grounded its verdict
         """
         collection = collection_name or settings.collection_name
 
@@ -381,7 +384,11 @@ class RAGPipeline:
             state["answer"] = full_answer
             logger.info(f"Streamed {len(full_answer)} chars of answer")
 
-            # Step 5: Hallucination check (non-blocking, doesn't affect stream)
+            # Step 5: Hallucination check. Tell the UI first when a real check
+            # runs, so the wait after the last token isn't silent.
+            was_checked = self.nodes.hallucination_check_will_run(state)
+            if was_checked:
+                yield {"type": "status", "step": "verifying"}
             hallucination_result = await self.nodes.check_hallucination(state)
             state.update(hallucination_result)
 
@@ -392,6 +399,7 @@ class RAGPipeline:
             yield {
                 "type": "done",
                 "is_grounded": state.get("is_grounded", True),
+                "was_checked": was_checked,
                 "iterations": state.get("iteration", 0),
                 "query_complexity": state.get("query_complexity"),
                 "is_summarization": state.get("is_summarization", False),

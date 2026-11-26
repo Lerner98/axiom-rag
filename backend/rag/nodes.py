@@ -771,6 +771,23 @@ class RAGNodes:
         
         return final_score
     
+    @staticmethod
+    def hallucination_check_will_run(state: RAGState) -> bool:
+        """
+        True when check_hallucination will actually compare the answer with its
+        sources, False when it takes one of its skip paths (no documents, or a
+        simple query with a high-confidence top document). The streaming
+        pipeline uses this to tell the UI a check is running.
+        """
+        docs = state.get("relevant_documents")
+        if not docs:
+            return False
+        if state.get("query_complexity", "complex") == "simple":
+            top_score = max((d.get("relevance_score", 0) for d in docs), default=0)
+            if top_score >= 70:
+                return False
+        return True
+
     async def check_hallucination(self, state: RAGState) -> dict:
         """
         Hybrid hallucination check: fast deterministic first, LLM if ambiguous.

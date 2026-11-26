@@ -19,13 +19,15 @@ export interface Message {
   sources?: Source[];
   timestamp: Date;
   isStreaming?: boolean;
+  isVerifying?: boolean;       // Streaming only: answer is being checked against its sources
   // Response metadata
+  wasChecked?: boolean;        // Whether a groundedness check ran (persisted with the chat)
   wasGrounded?: boolean;       // Whether response was grounded in retrieved sources
   processingTimeMs?: number;   // Total processing time in milliseconds
 }
 
 // Streaming phases for progress indication
-export type StreamingPhase = 'idle' | 'searching' | 'found_sources' | 'generating' | 'complete';
+export type StreamingPhase = 'idle' | 'searching' | 'found_sources' | 'generating' | 'verifying' | 'complete';
 
 // ADR-007: Document belongs to a chat, not to a global collection
 export interface Document {
@@ -77,7 +79,7 @@ interface ChatStore {
   setStreamingPhase: (phase: StreamingPhase) => void;
   appendStreamToken: (token: string) => void;
   setSources: (sources: Source[]) => void;
-  finishStreaming: (wasGrounded?: boolean, processingTimeMs?: number) => void;
+  finishStreaming: (wasGrounded?: boolean, processingTimeMs?: number, wasChecked?: boolean) => void;
   setError: (error: string | null) => void;
   clearMessages: () => void;
 
@@ -233,7 +235,7 @@ export const useChatStore = create<ChatStore>()(
         });
       },
 
-      finishStreaming: (wasGrounded, processingTimeMs) => {
+      finishStreaming: (wasGrounded, processingTimeMs, wasChecked) => {
         const { currentStreamingMessage, currentSources, currentChatId, streamingStartTime } = get();
 
         // Calculate processing time if not provided
@@ -253,6 +255,7 @@ export const useChatStore = create<ChatStore>()(
                         content: currentStreamingMessage,
                         sources: currentSources,
                         timestamp: new Date(),
+                        wasChecked: wasChecked ?? false,
                         wasGrounded,
                         processingTimeMs: finalProcessingTime,
                       },

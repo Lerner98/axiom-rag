@@ -73,8 +73,12 @@ export function useChat() {
             // Sources arrive BEFORE generation - this triggers 'found_sources' phase
             setSources(sources);
           },
-          onDone: (_messageId, wasGrounded, processingTimeMs) => {
-            finishStreaming(wasGrounded, processingTimeMs);
+          onStatus: (step) => {
+            // The answer is complete; the backend is checking it against its sources
+            if (step === 'verifying') setStreamingPhase('verifying');
+          },
+          onDone: (_messageId, wasGrounded, processingTimeMs, wasChecked) => {
+            finishStreaming(wasGrounded, processingTimeMs, wasChecked);
           },
           onError: (err) => {
             setError(err.message);

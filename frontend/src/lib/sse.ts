@@ -3,13 +3,14 @@
  *
  * The backend (sse-starlette) sends one JSON object per `data:` line:
  *   {type:'phase', phase}  {type:'sources', sources}  {type:'token', content}
- *   {type:'done', message_id, was_grounded, processing_time_ms}
+ *   {type:'status', step:'verifying'}   (answer is being checked against its sources)
+ *   {type:'done', message_id, was_grounded, was_checked, processing_time_ms}
  *   {type:'error', message, code}
  * EventSource can't POST, so this reads the response body with fetch.
  */
 
 import { API_CONFIG, API_ENDPOINTS, ERROR_CODES } from '@/constants/api';
-import type { Source as WireSource, SSEStreamingPhase, StreamEvent } from '@/types';
+import type { Source as WireSource, SSEStatusStep, SSEStreamingPhase, StreamEvent } from '@/types';
 import type { Source } from '@/stores/chatStore';
 
 /** Backend source (snake_case, score 0-1) -> UI source (id, relevance %, preview). */
@@ -27,7 +28,8 @@ export interface StreamCallbacks {
   onPhase?: (phase: SSEStreamingPhase) => void;
   onToken?: (token: string) => void;
   onSources?: (sources: Source[]) => void;
-  onDone?: (messageId: string, wasGrounded: boolean, processingTimeMs: number) => void;
+  onStatus?: (step: SSEStatusStep) => void;
+  onDone?: (messageId: string, wasGrounded: boolean, processingTimeMs: number, wasChecked: boolean) => void;
   onError?: (error: Error) => void;
 }
 
@@ -86,9 +88,17 @@ export async function streamChat(
       case 'token':
         if (evt.content) callbacks.onToken?.(evt.content);
         break;
+      case 'status':
+        if (evt.step) callbacks.onStatus?.(evt.step);
+        break;
       case 'done':
         finished = true;
-        callbacks.onDone?.(evt.message_id ?? '', evt.was_grounded ?? true, evt.processing_time_ms ?? 0);
+        callbacks.onDone?.(
+          evt.message_id ?? '',
+          evt.was_grounded ?? true,
+          evt.processing_time_ms ?? 0,
+          evt.was_checked ?? false,
+        );
         break;
       case 'error':
         finished = true;
