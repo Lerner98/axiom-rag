@@ -133,6 +133,7 @@ async def generate_stream(
                     message_id=message_id,
                     was_grounded=chunk.get("is_grounded", True),
                     was_checked=chunk.get("was_checked", False),
+                    not_found=chunk.get("not_found", False),
                     processing_time_ms=processing_time
                 )
                 yield json.dumps(done.model_dump())

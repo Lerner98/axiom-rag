@@ -775,25 +775,101 @@ class RAGNodes:
     def hallucination_check_will_run(state: RAGState) -> bool:
         """
         True when check_hallucination will actually compare the answer with its
-        sources, False when it takes one of its skip paths (no documents, or a
-        simple query with a high-confidence top document). The streaming
-        pipeline uses this to tell the UI a check is running.
+        sources. Only an empty retrieval skips it: the strong-match shortcut
+        (simple query + top doc >= 70%) no longer skips the check, because a
+        strong match does not stop the answer from going beyond the document.
+        The streaming pipeline uses this to tell the UI a check is running.
         """
-        docs = state.get("relevant_documents")
-        if not docs:
+        return bool(state.get("relevant_documents"))
+
+    # Phrases that say the documents don't contain the answer
+    _NOT_FOUND_PATTERNS = re.compile(
+        r"\bno mention (?:of|about)\b"
+        r"|\bnot (?:mentioned|found|included|covered|specified|stated|provided|addressed|discussed)\b"
+        r"|\b(?:does|do|did)(?:n't| not) (?:mention|contain|include|specify|say|cover|provide|address|discuss|state)\b"
+        r"|\bno (?:information|details|reference|data) (?:about|on|regarding|for|in)\b"
+        r"|\bthere (?:is|are) no (?:information|mention|reference|details)\b"
+        r"|\b(?:could|can)(?:n't| ?not) find\b"
+        r"|\b(?:isn't|aren't|is not|are not) (?:mentioned|covered|specified|addressed|included|discussed)\b",
+        re.IGNORECASE,
+    )
+
+    @classmethod
+    def _is_not_found_answer(cls, answer: str) -> bool:
+        """
+        True when the whole answer says the documents don't contain what was
+        asked (a correct refusal), as opposed to an answer with content.
+        Every sentence with real content must be a "not mentioned" statement;
+        short filler sentences ("I'm sorry.") are ignored.
+        """
+        sentences = [x.strip() for x in re.split(r"(?<=[.!?])\s+|\n+", answer or "") if x.strip()]
+        content = [x for x in sentences if len(re.findall(r"[A-Za-z]+", x)) > 3]
+        if not content or len(answer.split()) > 80:
             return False
-        if state.get("query_complexity", "complex") == "simple":
-            top_score = max((d.get("relevance_score", 0) for d in docs), default=0)
-            if top_score >= 70:
-                return False
-        return True
+        return all(cls._NOT_FOUND_PATTERNS.search(x) for x in content)
+
+    @classmethod
+    def _unsupported_specifics(cls, answer: str, sources: list[dict]) -> list[str]:
+        """
+        Specific facts in the answer that appear nowhere in the sources:
+        numbers, and capitalized names that are not at the start of a sentence
+        or list item. "The stipend for employees in Japan is 600 EUR" over a
+        document that never mentions Japan returns ["Japan"]. Names inside a
+        "the policy doesn't mention X" sentence don't count. Deterministic and
+        cheap (regex over a few KB), so it runs on every checked answer.
+        """
+        source_text = " ".join(s.get("content", s.get("page_content", "")) for s in sources)
+        source_lower = source_text.lower()
+        found: list[str] = []
+
+        negated = [
+            (m.start(), m.end()) for m in re.finditer(r"[^.!?\n]+[.!?]?", answer)
+            if cls._NOT_FOUND_PATTERNS.search(m.group(0))
+        ]
+
+        def in_negated(pos: int) -> bool:
+            return any(a <= pos < b for a, b in negated)
+
+        for m in re.finditer(r"\b[A-Z][A-Za-z][\w'-]*", answer):
+            word = m.group(0)
+            if in_negated(m.start()):
+                continue
+            before = answer[:m.start()].rstrip(" \t*_-\u2022#>\"'(`")
+            if not before or before[-1] in ".!?:\n":
+                continue  # sentence or list-item start: capitalized by grammar
+            base = word[:-2] if word.endswith("'s") else word
+            if base.lower() in source_lower:
+                continue
+            found.append(base)
+
+        for m in re.finditer(r"(?<![\w.])\d+(?:[.,]\d+)*(?!\w)", answer):
+            num = m.group(0)
+            if in_negated(m.start()):
+                continue
+            line_start = answer.rfind("\n", 0, m.start()) + 1
+            if not answer[line_start:m.start()].strip() and re.match(r"[.)]\s", answer[m.end():m.end() + 2]):
+                continue  # numbered-list marker ("1. ...")
+            if re.search(r"(?<![\d.,])" + re.escape(num) + r"(?!\d)", source_text):
+                continue
+            found.append(num)
+
+        return list(dict.fromkeys(found))
 
     async def check_hallucination(self, state: RAGState) -> dict:
         """
-        Hybrid hallucination check: fast deterministic first, LLM if ambiguous.
+        Hybrid hallucination check, deterministic first, LLM only if ambiguous.
 
-        OPTIMIZATION: For simple queries with high retrieval scores, skip entirely.
-        This saves ~3-5s on simple factual queries where hallucination is unlikely.
+        1. No documents: nothing to check against (skip).
+        2. The answer says the documents don't cover the question: grounded,
+           marked answer_not_found (the UI shows "Not found in your documents").
+        3. Numbers or names in the answer that the sources never mention:
+           not grounded, no LLM call needed.
+        4. Word/trigram overlap: >= 0.8 passes and < 0.3 fails without the
+           LLM; in between, the LLM decides.
+
+        The old strong-match shortcut (simple query + top doc >= 70% skipped
+        everything) is gone: steps 2-4 cost milliseconds, and the LLM step
+        still only runs when the overlap is ambiguous.
         """
         logger.info("Checking for hallucinations (hybrid)")
 
@@ -801,6 +877,7 @@ class RAGNodes:
             logger.info("Skipping hallucination check - no documents")
             return {
                 "is_grounded": True,
+                "answer_not_found": False,
                 "groundedness_score": 1.0,
                 "fast_groundedness_score": 1.0,
                 "skip_llm_hallucination_check": True,
@@ -809,39 +886,51 @@ class RAGNodes:
                 "processing_steps": ["hallucination_skip"],
             }
 
-        # OPTIMIZATION: Skip hallucination check for simple queries with high-confidence retrieval
-        # Simple queries with top doc score >= 70% are unlikely to hallucinate
-        query_complexity = state.get("query_complexity", "complex")
-        if query_complexity == "simple":
-            top_score = max(
-                (d.get("relevance_score", 0) for d in state["relevant_documents"]),
-                default=0
-            )
-            if top_score >= 70:  # 70% retrieval confidence
-                logger.info(f"FAST PATH: Skipping hallucination check (simple + high retrieval score={top_score:.1f}%)")
-                return {
-                    "is_grounded": True,
-                    "groundedness_score": top_score / 100,
-                    "fast_groundedness_score": top_score / 100,
-                    "skip_llm_hallucination_check": True,
-                    "hallucination_details": None,
-                    "iteration": state["iteration"] + 1,
-                    "processing_steps": ["hallucination_skip_simple_highconf"],
-                }
-
         sources_for_check = [
             {"content": d["content"], "metadata": d["metadata"]}
             for d in state["relevant_documents"]
         ]
 
-        # Fast check first
-        fast_score = self._fast_groundedness_check(state["answer"], sources_for_check)
+        answer = state.get("answer") or ""
+
+        # A correct "the documents don't cover this" answer
+        if self._is_not_found_answer(answer):
+            logger.info("Answer says the documents don't cover the question")
+            return {
+                "is_grounded": True,
+                "answer_not_found": True,
+                "groundedness_score": 1.0,
+                "fast_groundedness_score": 1.0,
+                "skip_llm_hallucination_check": True,
+                "hallucination_details": None,
+                "iteration": state["iteration"] + 1,
+                "processing_steps": ["hallucination_not_found"],
+            }
+
+        # Specific facts (names, numbers) the sources never mention
+        unsupported = self._unsupported_specifics(answer, sources_for_check)
+        if unsupported:
+            logger.info(f"Answer states specifics not in sources: {unsupported}")
+            return {
+                "is_grounded": False,
+                "answer_not_found": False,
+                "groundedness_score": 0.0,
+                "fast_groundedness_score": 0.0,
+                "skip_llm_hallucination_check": True,
+                "hallucination_details": "Not in the sources: " + ", ".join(unsupported),
+                "iteration": state["iteration"] + 1,
+                "processing_steps": ["hallucination_unsupported_specifics"],
+            }
+
+        # Fast overlap check
+        fast_score = self._fast_groundedness_check(answer, sources_for_check)
         
         # High confidence grounded
         if fast_score >= 0.8:
             logger.info(f"Fast check PASSED (score={fast_score:.2f}), skipping LLM")
             return {
                 "is_grounded": True,
+                "answer_not_found": False,
                 "groundedness_score": fast_score,
                 "fast_groundedness_score": fast_score,
                 "skip_llm_hallucination_check": True,
@@ -855,6 +944,7 @@ class RAGNodes:
             logger.info(f"Fast check FAILED (score={fast_score:.2f}), skipping LLM")
             return {
                 "is_grounded": False,
+                "answer_not_found": False,
                 "groundedness_score": fast_score,
                 "fast_groundedness_score": fast_score,
                 "skip_llm_hallucination_check": True,
@@ -870,7 +960,7 @@ class RAGNodes:
         
         prompt = HALLUCINATION_CHECK_PROMPT.format(
             sources=sources_text,
-            answer=state["answer"]
+            answer=answer
         )
         
         response = await self.llm.ainvoke(prompt)
@@ -899,6 +989,7 @@ class RAGNodes:
         
         return {
             "is_grounded": is_grounded,
+            "answer_not_found": False,
             "groundedness_score": score,
             "fast_groundedness_score": fast_score,
             "skip_llm_hallucination_check": False,

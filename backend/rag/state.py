@@ -44,6 +44,7 @@ class RAGState(TypedDict):
     
     # Validation - Original
     is_grounded: bool
+    answer_not_found: bool  # answer says the documents don't cover the question
     groundedness_score: float
     hallucination_details: Optional[str]
     
@@ -93,6 +94,7 @@ def create_initial_state(
         sources=[],
         # Validation
         is_grounded=False,
+        answer_not_found=False,
         groundedness_score=0.0,
         hallucination_details=None,
         fast_groundedness_score=0.0,

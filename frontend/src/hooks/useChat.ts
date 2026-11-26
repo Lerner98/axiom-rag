@@ -77,8 +77,8 @@ export function useChat() {
             // The answer is complete; the backend is checking it against its sources
             if (step === 'verifying') setStreamingPhase('verifying');
           },
-          onDone: (_messageId, wasGrounded, processingTimeMs, wasChecked) => {
-            finishStreaming(wasGrounded, processingTimeMs, wasChecked);
+          onDone: (_messageId, wasGrounded, processingTimeMs, wasChecked, notFound) => {
+            finishStreaming(wasGrounded, processingTimeMs, wasChecked, notFound);
           },
           onError: (err) => {
             setError(err.message);

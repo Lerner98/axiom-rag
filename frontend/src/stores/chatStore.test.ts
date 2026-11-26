@@ -15,11 +15,11 @@ describe('chatStore check result', () => {
     s.setStreamingPhase('verifying');
     expect(useChatStore.getState().streamingPhase).toBe('verifying');
 
-    s.finishStreaming(false, 1200, true);
+    s.finishStreaming(false, 1200, true, false);
 
     const st = useChatStore.getState();
     const msg = st.chats[0].messages.at(-1)!;
-    expect(msg).toMatchObject({ role: 'assistant', wasChecked: true, wasGrounded: false });
+    expect(msg).toMatchObject({ role: 'assistant', wasChecked: true, wasGrounded: false, notFound: false });
     expect(st.streamingPhase).toBe('idle');
 
     // zustand persist writes the chats to localStorage, so the result survives a reload
