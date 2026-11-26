@@ -74,6 +74,7 @@ class StreamDone(BaseModel):
     message_id: str
     was_grounded: bool
     was_checked: bool = False  # True when a groundedness check actually ran
+    not_found: bool = False  # answer says the documents don't cover the question
     processing_time_ms: int
 
 

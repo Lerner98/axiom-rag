@@ -25,6 +25,10 @@ describe('answerCheckState', () => {
     expect(answerCheckState(answer({ wasGrounded: true }))).toBeNull(); // messages saved before this feature
   });
 
+  it('labels a correct "not in your documents" answer as not_found, not a warning', () => {
+    expect(answerCheckState(answer({ wasChecked: true, wasGrounded: true, notFound: true }))).toBe('not_found');
+  });
+
   it('never applies to user messages', () => {
     expect(answerCheckState(answer({ role: 'user', wasChecked: true, wasGrounded: true }))).toBeNull();
   });
@@ -55,6 +59,23 @@ describe('MessageBubble check line', () => {
     render(<MessageBubble message={answer({ wasChecked: true, wasGrounded: false })} />);
     expect(screen.getByRole('status')).toHaveTextContent("Couldn't fully verify, check the sources");
     expect(screen.getByRole('status')).toHaveAttribute('data-state', 'ungrounded');
+  });
+
+  it('shows the neutral not-found line for the pets/childcare/beach answer', () => {
+    render(
+      <MessageBubble
+        message={answer({
+          content: 'There is no mention of pets, childcare, or working from a beach abroad in the provided policy document.',
+          wasChecked: true,
+          wasGrounded: true,
+          notFound: true,
+        })}
+      />,
+    );
+    const line = screen.getByRole('status');
+    expect(line).toHaveTextContent('Not found in your documents');
+    expect(line).toHaveAttribute('data-state', 'not_found');
+    expect(line).not.toHaveTextContent("Couldn't fully verify");
   });
 
   it('shows nothing when no check ran', () => {

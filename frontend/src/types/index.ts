@@ -63,6 +63,7 @@ export interface StreamEvent {
   message_id?: string;
   was_grounded?: boolean;
   was_checked?: boolean; // true when a groundedness check actually ran
+  not_found?: boolean; // the answer says the documents don't cover the question
   processing_time_ms?: number;
   // Error event
   message?: string;

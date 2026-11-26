@@ -400,6 +400,7 @@ class RAGPipeline:
                 "type": "done",
                 "is_grounded": state.get("is_grounded", True),
                 "was_checked": was_checked,
+                "not_found": bool(state.get("answer_not_found")),
                 "iterations": state.get("iteration", 0),
                 "query_complexity": state.get("query_complexity"),
                 "is_summarization": state.get("is_summarization", False),

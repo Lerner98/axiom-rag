@@ -22,6 +22,7 @@ export interface Message {
   isVerifying?: boolean;       // Streaming only: answer is being checked against its sources
   // Response metadata
   wasChecked?: boolean;        // Whether a groundedness check ran (persisted with the chat)
+  notFound?: boolean;          // Answer says the documents don't cover the question
   wasGrounded?: boolean;       // Whether response was grounded in retrieved sources
   processingTimeMs?: number;   // Total processing time in milliseconds
 }
@@ -79,7 +80,12 @@ interface ChatStore {
   setStreamingPhase: (phase: StreamingPhase) => void;
   appendStreamToken: (token: string) => void;
   setSources: (sources: Source[]) => void;
-  finishStreaming: (wasGrounded?: boolean, processingTimeMs?: number, wasChecked?: boolean) => void;
+  finishStreaming: (
+    wasGrounded?: boolean,
+    processingTimeMs?: number,
+    wasChecked?: boolean,
+    notFound?: boolean,
+  ) => void;
   setError: (error: string | null) => void;
   clearMessages: () => void;
 
@@ -235,7 +241,7 @@ export const useChatStore = create<ChatStore>()(
         });
       },
 
-      finishStreaming: (wasGrounded, processingTimeMs, wasChecked) => {
+      finishStreaming: (wasGrounded, processingTimeMs, wasChecked, notFound) => {
         const { currentStreamingMessage, currentSources, currentChatId, streamingStartTime } = get();
 
         // Calculate processing time if not provided
@@ -256,6 +262,7 @@ export const useChatStore = create<ChatStore>()(
                         sources: currentSources,
                         timestamp: new Date(),
                         wasChecked: wasChecked ?? false,
+                        notFound: notFound ?? false,
                         wasGrounded,
                         processingTimeMs: finalProcessingTime,
                       },

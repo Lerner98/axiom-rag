@@ -84,10 +84,11 @@ async def test_not_grounded_verdict_reaches_done_event():
 
 
 @pytest.mark.asyncio
-async def test_no_status_when_check_is_skipped_for_simple_high_confidence():
+async def test_strong_match_still_announces_the_check():
+    """Simple query + top doc >= 70% used to skip the check; it no longer does."""
     events = await collect(make_pipeline(complexity="simple", top_score=85.0))
-    assert all(e["type"] != "status" for e in events)
-    assert events[-1]["was_checked"] is False
+    assert {"type": "status", "step": "verifying"} in events
+    assert events[-1]["was_checked"] is True
 
 
 @pytest.mark.asyncio
@@ -109,14 +110,14 @@ async def test_no_status_for_greeting():
     "state, expected",
     [
         ({"relevant_documents": []}, False),
-        ({"query_complexity": "simple", "relevant_documents": [dict(DOC, relevance_score=90)]}, False),
+        ({"query_complexity": "simple", "relevant_documents": [dict(DOC, relevance_score=90)]}, True),
         ({"query_complexity": "simple", "relevant_documents": [dict(DOC, relevance_score=40)]}, True),
         ({"query_complexity": "complex", "relevant_documents": [dict(DOC, relevance_score=90)]}, True),
     ],
 )
 @pytest.mark.asyncio
 async def test_prediction_matches_what_check_hallucination_does(state, expected):
-    """hallucination_check_will_run must agree with check_hallucination's skip paths."""
+    """hallucination_check_will_run must agree with whether check_hallucination really checks."""
     nodes = RAGNodes.__new__(RAGNodes)
     nodes._fast_groundedness_check = MagicMock(return_value=0.9)  # passes without the LLM
     state = dict(state, answer="Twenty days.", iteration=0)

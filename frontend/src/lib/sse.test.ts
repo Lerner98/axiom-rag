@@ -28,13 +28,25 @@ describe('streamChat status event', () => {
       onDone,
     });
     expect(order).toEqual(['token', 'status:verifying', 'done']);
-    expect(onDone).toHaveBeenCalledWith('m1', false, 900, true);
+    expect(onDone).toHaveBeenCalledWith('m1', false, 900, true, false);
   });
 
   it('treats a done event without was_checked as unchecked', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => sseResponse([{ type: 'done', message_id: 'm2', was_grounded: true }])));
     const onDone = vi.fn();
     await streamChat('hi', 's1', 'c1', { onDone });
-    expect(onDone).toHaveBeenCalledWith('m2', true, 0, false);
+    expect(onDone).toHaveBeenCalledWith('m2', true, 0, false, false);
+  });
+
+  it('passes not_found through to onDone', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        sseResponse([{ type: 'done', message_id: 'm3', was_grounded: true, was_checked: true, not_found: true }]),
+      ),
+    );
+    const onDone = vi.fn();
+    await streamChat('pets?', 's1', 'c1', { onDone });
+    expect(onDone).toHaveBeenCalledWith('m3', true, 0, true, true);
   });
 });

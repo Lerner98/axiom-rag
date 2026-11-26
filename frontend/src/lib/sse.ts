@@ -4,7 +4,7 @@
  * The backend (sse-starlette) sends one JSON object per `data:` line:
  *   {type:'phase', phase}  {type:'sources', sources}  {type:'token', content}
  *   {type:'status', step:'verifying'}   (answer is being checked against its sources)
- *   {type:'done', message_id, was_grounded, was_checked, processing_time_ms}
+ *   {type:'done', message_id, was_grounded, was_checked, not_found, processing_time_ms}
  *   {type:'error', message, code}
  * EventSource can't POST, so this reads the response body with fetch.
  */
@@ -29,7 +29,13 @@ export interface StreamCallbacks {
   onToken?: (token: string) => void;
   onSources?: (sources: Source[]) => void;
   onStatus?: (step: SSEStatusStep) => void;
-  onDone?: (messageId: string, wasGrounded: boolean, processingTimeMs: number, wasChecked: boolean) => void;
+  onDone?: (
+    messageId: string,
+    wasGrounded: boolean,
+    processingTimeMs: number,
+    wasChecked: boolean,
+    notFound: boolean,
+  ) => void;
   onError?: (error: Error) => void;
 }
 
@@ -98,6 +104,7 @@ export async function streamChat(
           evt.was_grounded ?? true,
           evt.processing_time_ms ?? 0,
           evt.was_checked ?? false,
+          evt.not_found ?? false,
         );
         break;
       case 'error':
